@@ -11,4 +11,13 @@ const streamSchema = new mongoose.Schema({
 // Create the Stream model
 const Stream = mongoose.model('Stream', streamSchema, 'camerasData');
 
-module.exports = Stream;
+
+const userData = new mongoose.Schema({
+    username: String,
+    email: String,
+    password: String
+})
+
+const User = mongoose.model('User', userData, 'usersData');
+
+module.exports = { Stream, User };

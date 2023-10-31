@@ -1,26 +1,24 @@
-//this file generate mpeg streams based on the rtsp urls
-
 const Stream = require('node-rtsp-stream');
 const getRTSPUrls = require('../../database/rtsp');
 
 let rtspstreams = [];
+let activeStreams = []; // Array to store active stream objects
 
 function createStreams(rtspUrls) {
     const streams = [];
-    rtspUrls.forEach((url, index) => {
+    rtspUrls.forEach((camera, index) => {
         const wsPort = 9000 + index;
         const stream = new Stream({
-            name: `cam${index + 1}`,
-            streamUrl: url,
+            name: camera.name,
+            streamUrl: camera.url,
             wsPort: wsPort,
             ffmpegOptions: {
-                '-stats': '',
                 '-r': 20,
                 '-s': '1280x720',
                 '-preset': 'medium'
             },
         });
-        streams.push({ url, wsPort }); // Push an object containing url and wsPort to the streams array
+        streams.push({ wsPort, stream, camera }); // Store the stream object along with other data
     });
     return streams;
 }
@@ -28,14 +26,21 @@ function createStreams(rtspUrls) {
 function startStreams() {
     return getRTSPUrls()
         .then((rtspUrls) => {
-            console.log('RTSP URLs:', rtspUrls);
             rtspstreams = createStreams(rtspUrls);
-            return rtspstreams; // Return the modified array
+            activeStreams = rtspstreams.map(({ stream }) => stream); // Store active stream objects
+            return rtspstreams;
         })
         .catch((error) => {
             console.error('Error fetching RTSP URLs:', error);
-            throw error; // Rethrow the error to be caught by the caller
+            throw error;
         });
 }
 
-module.exports = startStreams;
+async function stopStreams() {
+    activeStreams.forEach((stream) => {
+        stream.stop(); // Stop each active stream
+    });
+    activeStreams = []; // Clear the active streams array
+}
+
+module.exports = { startStreams, stopStreams };

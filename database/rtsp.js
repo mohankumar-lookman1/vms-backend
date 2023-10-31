@@ -3,18 +3,20 @@
 
 const db = require('./connection');
 
-const Stream = require('./models/stream');
+const { Stream } = require('./models/models');
 
 async function getRTSPUrls() {
     try {
         const camerasData = await Stream.find();
 
         const rtspUrls = camerasData.map((camera) => {
-            const { cameraIp, accessName, accessPwd } = camera;
+            const { cameraIp, accessName, accessPwd, name } = camera;
             const rtspUrl = `rtsp://${accessName}:${accessPwd}@${cameraIp}`;
-            return rtspUrl;
+            return ({
+                url: rtspUrl,
+                name: name
+            });
         });
-
         return rtspUrls;
     } catch (error) {
         console.error('Failed to retrieve camerasData:', error);
