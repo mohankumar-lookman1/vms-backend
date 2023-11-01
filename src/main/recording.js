@@ -2,6 +2,7 @@ const ffmpeg = require('fluent-ffmpeg');
 const path = require('path');
 const fs = require('fs').promises;
 const getRTSPUrls = require('../../database/rtsp');
+const { exec } = require('child_process');
 
 async function recordVideo() {
     const mediaFolder = 'media';
@@ -15,7 +16,7 @@ async function recordVideo() {
         const rtspUrls = await getRTSPUrls();
 
         rtspUrls.forEach(async (rtspUrlObj) => {
-            const { url, name } = rtspUrlObj;
+            const { url, name, ip } = rtspUrlObj;
             const cameraName = name;
             const now = new Date();
             const date = now.toISOString().split('T')[0]; // Get current date in format YYYY-MM-DD
@@ -25,14 +26,23 @@ async function recordVideo() {
             const outputDir = path.join(recordingsFolder, cameraName, date, folderTimestamp);
 
 
-            async function isCameraAvailable(url) {
-                console.log(url);
+            async function isCameraAvailable(ip) {
                 return new Promise((resolve) => {
-                    resolve(true);
+                    exec(`ping -c 1 ${ip}`, (error, stdout) => {
+                        if (error) {
+                            console.error(`Error checking camera availability: ${error.message}`);
+                            resolve(false); // Camera is not available
+                        } else {
+                            // Check the response to determine camera availability
+                            const isAvailable = stdout.includes('1 packets transmitted, 1 received');
+                            resolve(isAvailable);
+                        }
+                    });
                 });
             }
 
-            isCameraAvailable(url)
+
+            isCameraAvailable(ip)
                 .then(async (isAvailable) => {
                     if (isAvailable) {
                         console.log('Camera is available.');
@@ -50,7 +60,7 @@ async function recordVideo() {
                                     '-r 15',
                                     '-f hls',
                                     '-s 640x480',
-                                    '-preset slow'
+                                    '-preset fast'
                                 ])
                                 .output(path.join(outputDir, 'index.m3u8'))
                                 .on('end', () => {

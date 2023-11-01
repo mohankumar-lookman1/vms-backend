@@ -63,8 +63,8 @@ app.post('/add-stream', async (req, res) => {
 
 app.get('/video-stream', async (req, res) => {
     const { cameraname, date, starttime, endtime } = req.query;
-    const videoFolderPath = path.join('media', 'recordings', cameraname, date, starttime); // Path to the video folder
-
+    const videoFolderPath = path.join('media', 'recordings', cameraname.toString(), date.toString(), starttime.toString()); // Path to the video folder
+    console.log(videoFolderPath)
     try {
         // Read the list of files in the video folder
         const files = await fs.readdir(videoFolderPath);
@@ -73,7 +73,7 @@ app.get('/video-stream', async (req, res) => {
         const videoFiles = files.filter((file) => file.endsWith('.ts'));
 
         // Set the appropriate Content-Type for HLS chunks
-        res.setHeader('Content-Type', 'video/MP2T');
+        res.setHeader('Content-Type', 'application/MP2T');
 
         // Send each video chunk one by one
         for (const videoFile of videoFiles) {
@@ -83,8 +83,7 @@ app.get('/video-stream', async (req, res) => {
             const fileContent = await fs.readFile(filePath);
             res.write(fileContent);
 
-            // Optionally, you can introduce a delay between sending chunks if needed
-            // await new Promise(resolve => setTimeout(resolve, 100)); // Delay in milliseconds
+
         }
 
         // End the response

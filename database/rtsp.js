@@ -14,7 +14,8 @@ async function getRTSPUrls() {
             const rtspUrl = `rtsp://${accessName}:${accessPwd}@${cameraIp}`;
             return ({
                 url: rtspUrl,
-                name: name
+                name: name,
+                ip: cameraIp
             });
         });
         return rtspUrls;

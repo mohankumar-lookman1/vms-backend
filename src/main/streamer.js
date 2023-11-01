@@ -3,9 +3,11 @@ const getRTSPUrls = require('../../database/rtsp');
 
 let rtspstreams = [];
 let activeStreams = []; // Array to store active stream objects
-
+stopStreams();
 function createStreams(rtspUrls) {
     const streams = [];
+    stopStreams();
+
     rtspUrls.forEach((camera, index) => {
         const wsPort = 9000 + index;
         const stream = new Stream({
@@ -13,6 +15,7 @@ function createStreams(rtspUrls) {
             streamUrl: camera.url,
             wsPort: wsPort,
             ffmpegOptions: {
+
                 '-r': 20,
                 '-s': '1280x720',
                 '-preset': 'medium'
