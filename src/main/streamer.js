@@ -1,31 +1,36 @@
 const Stream = require('node-rtsp-stream');
 const getRTSPUrls = require('../../database/rtsp');
-
+const { isCameraAvailable } = require('../main/recording');
 let rtspstreams = [];
 let activeStreams = []; // Array to store active stream objects
-stopStreams();
 function createStreams(rtspUrls) {
+    activeStreams.forEach((stream) => {
+        stream.stop();
+    });
+    activeStreams = [];
     const streams = [];
-    stopStreams();
-
-    rtspUrls.forEach((camera, index) => {
+    rtspUrls.forEach(async (camera, index) => {
+        // console.log(camera.ip)
+        if (!isCameraAvailable(camera.ip)) {
+            console.log('Camera is not available.');
+            return;
+        }
         const wsPort = 9000 + index;
         const stream = new Stream({
             name: camera.name,
             streamUrl: camera.url,
             wsPort: wsPort,
             ffmpegOptions: {
-
                 '-r': 20,
-                '-s': '1280x720',
-                '-preset': 'medium'
+                '-s': '640x480',
+                '-preset': 'medium',
             },
         });
-        streams.push({ wsPort, stream, camera }); // Store the stream object along with other data
+        streams.push({ wsPort, stream, camera });
+
     });
     return streams;
 }
-
 function startStreams() {
     return getRTSPUrls()
         .then((rtspUrls) => {
@@ -39,11 +44,5 @@ function startStreams() {
         });
 }
 
-async function stopStreams() {
-    activeStreams.forEach((stream) => {
-        stream.stop(); // Stop each active stream
-    });
-    activeStreams = []; // Clear the active streams array
-}
 
-module.exports = { startStreams, stopStreams };
+module.exports = startStreams;

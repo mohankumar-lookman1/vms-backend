@@ -2,14 +2,16 @@ const express = require('express');
 const client = require('../../database/connection');
 const app = express();
 const { Stream } = require('../../database/models/models');
-const { startStreams, stopStreams } = require('../main/streamer');
+const startStreams = require('../main/streamer');
 const path = require('path');
-const fs = require('fs').promises;
+const fs = require('fs');
+const _ = require('lodash');
 
-app.get('/available-ports', (req, res) => {
-    stopStreams();
+const getAvailablePorts = app.get('/available-ports', (req, res) => {
+
     startStreams()
         .then((rtspstreams) => {
+
             const availablePorts = rtspstreams.map(stream => {
                 return {
                     name: stream.camera.name,
@@ -17,6 +19,7 @@ app.get('/available-ports', (req, res) => {
                 };
             });
             res.json({ availablePorts });
+            console.log('Available ports:', availablePorts);
         })
         .catch((error) => {
             console.error('Error starting streams:', error);
@@ -24,6 +27,7 @@ app.get('/available-ports', (req, res) => {
         });
 });
 
+_.throttle(getAvailablePorts, 3000)
 app.post('/add-stream', async (req, res) => {
     try {
         const { name, ip, username, password } = req.body;
@@ -43,9 +47,6 @@ app.post('/add-stream', async (req, res) => {
             stream.save()
                 .then(() => {
                     res.send('Stream added successfully');
-                })
-                .then(() => {
-                    stopStreams();
                     startStreams();
                 })
                 .catch((error) => {
@@ -62,36 +63,32 @@ app.post('/add-stream', async (req, res) => {
 });
 
 app.get('/video-stream', async (req, res) => {
-    const { cameraname, date, starttime, endtime } = req.query;
-    const videoFolderPath = path.join('media', 'recordings', cameraname.toString(), date.toString(), starttime.toString()); // Path to the video folder
-    console.log(videoFolderPath)
-    try {
-        // Read the list of files in the video folder
-        const files = await fs.readdir(videoFolderPath);
+    const { cameraname, date, starttime } = req.query;
+    const yourIPAddress = '192.168.1.52:3000'; // Replace 'YOUR_IP_ADDRESS' with your actual IP address
+    const recordingFolder = path.join('media', 'recordings', cameraname.toString(), date.toString(), starttime.toString());
+    const indexFilePath = path.join(recordingFolder, 'index.m3u8');
 
-        // Filter out the files you want to include in the response (e.g., *.ts files)
-        const videoFiles = files.filter((file) => file.endsWith('.ts'));
+    // Read the original index.m3u8 file content
+    const originalIndexContent = fs.readFileSync(indexFilePath, 'utf-8');
 
-        // Set the appropriate Content-Type for HLS chunks
-        res.setHeader('Content-Type', 'application/MP2T');
+    // Parse the original index.m3u8 file and generate dynamic chunk URLs with your IP address
+    const modifiedIndexContent = originalIndexContent
+        .split('\n')
+        .map((line, index) => {
+            if (line.endsWith('.ts')) {
+                // Dynamically generate the URL for each .ts chunk with your IP address
+                return `${path.join('http://' + yourIPAddress, 'recordings', cameraname, date, starttime, line)}`;
+            }
+            return line;
+        })
+        .join('\n');
 
-        // Send each video chunk one by one
-        for (const videoFile of videoFiles) {
-            const filePath = path.join(videoFolderPath, videoFile);
+    // Set the response headers
+    res.setHeader('Content-Type', 'application/vnd.apple.mpegurl');
+    res.status(200);
 
-            // Read the video chunk and send it
-            const fileContent = await fs.readFile(filePath);
-            res.write(fileContent);
-
-
-        }
-
-        // End the response
-        res.end();
-    }
-    catch {
-        res.status(404).send('Video not found');
-    }
+    // Send the updated index.m3u8 content with dynamic chunk URLs
+    res.send(modifiedIndexContent);
 });
 
 

@@ -4,21 +4,26 @@ const api = require('./src/api/api');
 const bodyParser = require('body-parser');
 const db = require('./database/connection');
 const path = require('path');
-const recordVideo = require('./src/main/recording');
+const { recordVideo } = require('./src/main/recording');
 const app = express();
 const PORT = 3000;
-app.use(express.static(path.join(__dirname, './media/recordings')));
+app.use(express.static(path.join(__dirname, 'media')));
 const auth = require('./src/api/auth');
-app.use(cors());
+const corsOptions = {
+    origin: '*',
+    methods: 'GET',
+    allowedHeaders: '*'
+};
+
+app.use(cors(corsOptions));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use('/', api);
 app.use('/auth', auth);
 (async () => {
     try {
-        // await setInterval(recordVideo, 60000);
-        // await recordVideo();
-        console.log("recording started")
+        // recordVideo();
+        // setInterval(recordVideo, 6000);
     }
     catch (error) {
         console.log(error);
