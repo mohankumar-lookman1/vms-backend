@@ -62,34 +62,34 @@ app.post('/add-stream', async (req, res) => {
 
 });
 
-app.get('/video-stream', async (req, res) => {
-    const { cameraname, date, starttime } = req.query;
-    const yourIPAddress = '192.168.1.52:3000'; // Replace 'YOUR_IP_ADDRESS' with your actual IP address
-    const recordingFolder = path.join('media', 'recordings', cameraname.toString(), date.toString(), starttime.toString());
-    const indexFilePath = path.join(recordingFolder, 'index.m3u8');
+// app.get('/video-stream', async (req, res) => {
+//     const { cameraname, date, starttime } = req.query;
+//     const yourIPAddress = '192.168.1.52:3000'; // Replace 'YOUR_IP_ADDRESS' with your actual IP address
+//     const recordingFolder = path.join('media', 'recordings', cameraname.toString(), date.toString(), starttime.toString());
+//     const indexFilePath = path.join(recordingFolder, 'index.m3u8');
 
-    // Read the original index.m3u8 file content
-    const originalIndexContent = fs.readFileSync(indexFilePath, 'utf-8');
+//     // Read the original index.m3u8 file content
+//     const originalIndexContent = fs.readFileSync(indexFilePath, 'utf-8');
 
-    // Parse the original index.m3u8 file and generate dynamic chunk URLs with your IP address
-    const modifiedIndexContent = originalIndexContent
-        .split('\n')
-        .map((line, index) => {
-            if (line.endsWith('.ts')) {
-                // Dynamically generate the URL for each .ts chunk with your IP address
-                return `${path.join('http://' + yourIPAddress, 'recordings', cameraname, date, starttime, line)}`;
-            }
-            return line;
-        })
-        .join('\n');
+//     // Parse the original index.m3u8 file and generate dynamic chunk URLs with your IP address
+//     const modifiedIndexContent = originalIndexContent
+//         .split('\n')
+//         .map((line, index) => {
+//             if (line.endsWith('.ts')) {
+//                 // Dynamically generate the URL for each .ts chunk with your IP address
+//                 return `${path.join('http://' + yourIPAddress, 'recordings', cameraname, date, starttime, line)}`;
+//             }
+//             return line;
+//         })
+//         .join('\n');
 
-    // Set the response headers
-    res.setHeader('Content-Type', 'application/vnd.apple.mpegurl');
-    res.status(200);
+//     // Set the response headers
+//     res.setHeader('Content-Type', 'application/vnd.apple.mpegurl');
+//     res.status(200);
 
-    // Send the updated index.m3u8 content with dynamic chunk URLs
-    res.send(modifiedIndexContent);
-});
+//     // Send the updated index.m3u8 content with dynamic chunk URLs
+//     res.send(modifiedIndexContent);
+// });
 
 
 

@@ -1,7 +1,7 @@
 //this file connects to the database
 const mongoose = require('mongoose');
 
-const MONGODB_URI = 'mongodb://localhost:27017/vms'; // Replace with your actual database name
+const MONGODB_URI = 'mongodb+srv://mohan:SPIxReprU2WhbsZP@secura.ktxe3oz.mongodb.net/?retryWrites=true&w=majority'; // Replace with your actual database name
 
 mongoose.connect(MONGODB_URI, {
     useNewUrlParser: true,

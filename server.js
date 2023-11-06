@@ -22,7 +22,7 @@ app.use('/', api);
 app.use('/auth', auth);
 (async () => {
     try {
-        // recordVideo();
+        recordVideo();
         // setInterval(recordVideo, 6000);
     }
     catch (error) {
