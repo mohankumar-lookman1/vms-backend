@@ -9,7 +9,7 @@ pipeline {
         }
         stage('Deploy') {
             steps {
-                sh 'docker run -d -p 8080:80 secura-vms'
+                sh 'docker run -d  --network host -p 3000:3000 secura-vms'
             }
         }
     }
