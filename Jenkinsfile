@@ -4,7 +4,7 @@ pipeline {
     stages {
         stage('Build') {
             steps {
-                sh 'docker build -t secura-vms .'
+                sh 'docker build  secura-vms .'
             }
         }
         stage('Deploy') {
