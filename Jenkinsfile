@@ -1,4 +1,3 @@
-@Library('docker') _
 
 pipeline {
     agent any
@@ -23,13 +22,4 @@ pipeline {
         }
     }
 
-    post {
-        always {
-            // Clean up - stop and remove the Docker container
-            script {
-                docker.stop('secura-vms')
-                docker.remove('secura-vms')
-            }
-        }
-    }
 }
