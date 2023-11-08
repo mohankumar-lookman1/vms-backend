@@ -6,6 +6,7 @@ const startStreams = require('../main/streamer');
 const path = require('path');
 const fs = require('fs');
 const _ = require('lodash');
+const { recordVideo } = require('../main/recording');
 
 const getAvailablePorts = app.get('/available-ports', (req, res) => {
 
@@ -86,27 +87,36 @@ app.get('/video-recordings', async (req, res) => {
     });
 
 
-    // Send the HLS playlist to the client
     res.write(modifiedIndexContent);
 
-    // // Send video chunks referenced in the playlist
-    // const chunkFileNames = playlistContent.split('\n').filter(line => line.endsWith('.ts'));
-    // console.log(chunkFileNames)
-    // for (const fileName of chunkFileNames) {
-    //     const filePath = path.join(videoFolderPath, fileName);
-    //     console.log(filePath)
-    //     const fileContent = await fs.promises.readFile(filePath);
 
-    //     // Set the appropriate headers for each TS chunk
-
-    //     // Send the TS chunk to the client
-    //     res.write(fileContent);
-    // }
-
-    // End the response
     res.end();
 });
+app.get('/start-recording', async (req, res) => {
+    try {
+        recordVideo()
+        setInterval(recordVideo, 30000);
+        res.send('recording started', 200)
+    }
+    catch (error) {
+        console.log(error);
+        res.send('error', 500);
+    }
 
+})
+app.get('/stop-recording', async (req, res) => {
+    try {
+        activeProcesses.forEach((process) => {
+            console.log(process);
+            process.kill('SIGKILL'); // Kill the process
+            res.send('recording stopped', 200)
+        })
+    }
+    catch (error) {
+        console.log(error);
+        res.send('error', 500);
+    }
+})
 
 
 module.exports = app;

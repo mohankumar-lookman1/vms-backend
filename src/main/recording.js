@@ -25,11 +25,6 @@ async function recordVideo() {
     const recordingsFolder = path.join(mediaFolder, 'recordings');
     try {
         // Stop active FFMPEG processes
-        activeProcesses.forEach((process) => {
-            console.log(process);
-            // process.kill('SIGKILL'); // Kill the process
-        });
-        activeProcesses.length = 0; // Clear the active processes array
         // Ensure media and recordings folders exist
         await fs.mkdir(mediaFolder, { recursive: true });
         await fs.mkdir(recordingsFolder, { recursive: true });
@@ -58,8 +53,6 @@ async function recordVideo() {
                                     '-hls_time 10',
                                     '-hls_list_size 0',
                                     '-start_number 0',
-                                    '-vcodec copy',
-                                    '-acodec copy',
                                     '-r 15',
                                     '-f hls',
                                     '-s 640x480',
@@ -93,4 +86,4 @@ async function recordVideo() {
     }
 }
 
-module.exports = { isCameraAvailable, recordVideo };
+module.exports = { isCameraAvailable, recordVideo, activeProcesses };
