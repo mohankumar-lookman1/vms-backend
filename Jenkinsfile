@@ -7,9 +7,21 @@ pipeline {
                 sh 'docker build -t secura/secura-vms .'
             }
         }
-        stage('Deploy') {
+        stage('Stop and Remove Previous Container') {
             steps {
-                sh 'docker run -d  --network host -p 3000:3000 secura-vms'
+                script {
+                    // Stop and remove the existing container named 'secura-vms-container'
+                    sh 'docker stop secura-vms-container || true'
+                    sh 'docker rm secura-vms-container || true'
+                }
+            }
+        }
+        stage('Push and Run New Container') {
+            withCredentials([string(credentialsId: 'docker-hub-pwd', variable: 'dockerHubPwd')]) {
+                steps {
+                    sh "docker login -u mohankumar135 -p ${dockerHubPwd}"
+                    sh 'docker run -d --network host -p 3000:3000 --name secura-vms-container secura/secura-vms'
+                }
             }
         }
     }
