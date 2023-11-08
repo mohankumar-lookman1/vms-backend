@@ -7,7 +7,6 @@ const path = require('path');
 const { recordVideo } = require('./src/main/recording');
 const app = express();
 const PORT = 3000;
-app.use(express.static(path.join(__dirname, 'media')));
 const auth = require('./src/api/auth');
 const corsOptions = {
     origin: '*',
@@ -16,13 +15,15 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
+app.use(express.static('media'));
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use('/', api);
 app.use('/auth', auth);
 (async () => {
     try {
-        recordVideo();
+        // recordVideo();
         // setInterval(recordVideo, 6000);
     }
     catch (error) {

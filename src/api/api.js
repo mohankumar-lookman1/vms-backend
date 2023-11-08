@@ -62,34 +62,50 @@ app.post('/add-stream', async (req, res) => {
 
 });
 
-// app.get('/video-stream', async (req, res) => {
-//     const { cameraname, date, starttime } = req.query;
-//     const yourIPAddress = '192.168.1.52:3000'; // Replace 'YOUR_IP_ADDRESS' with your actual IP address
-//     const recordingFolder = path.join('media', 'recordings', cameraname.toString(), date.toString(), starttime.toString());
-//     const indexFilePath = path.join(recordingFolder, 'index.m3u8');
 
-//     // Read the original index.m3u8 file content
-//     const originalIndexContent = fs.readFileSync(indexFilePath, 'utf-8');
 
-//     // Parse the original index.m3u8 file and generate dynamic chunk URLs with your IP address
-//     const modifiedIndexContent = originalIndexContent
-//         .split('\n')
-//         .map((line, index) => {
-//             if (line.endsWith('.ts')) {
-//                 // Dynamically generate the URL for each .ts chunk with your IP address
-//                 return `${path.join('http://' + yourIPAddress, 'recordings', cameraname, date, starttime, line)}`;
-//             }
-//             return line;
-//         })
-//         .join('\n');
+app.get('/video-recordings', async (req, res) => {
+    const { cameraname, date, starttime, endtime } = req.query;
+    const videoFolderPath = path.join('media', 'recordings', cameraname, date, starttime); // Path to the video folder
 
-//     // Set the response headers
-//     res.setHeader('Content-Type', 'application/vnd.apple.mpegurl');
-//     res.status(200);
+    // Generate HLS playlist file (index.m3u8)
+    const originalPlaylistContent = await fs.promises.readFile(videoFolderPath + '/index.m3u8', 'utf8');
+    const modifiedIndexContent = originalPlaylistContent
+        .split('\n')
+        .map((line, index) => {
+            if (line.endsWith('.ts')) {
+                // Dynamically generate the URL for each .ts chunk with your IP address
+                return `${path.join('recordings', cameraname, date, starttime, line)}`;
+            }
+            return line;
+        })
+        .join('\n');
+    res.writeHead(200, {
+        'Content-Type': 'application/vnd.apple.mpegurl',
+        'Access-Control-Allow-Origin': '*'
+    });
 
-//     // Send the updated index.m3u8 content with dynamic chunk URLs
-//     res.send(modifiedIndexContent);
-// });
+
+    // Send the HLS playlist to the client
+    res.write(modifiedIndexContent);
+
+    // // Send video chunks referenced in the playlist
+    // const chunkFileNames = playlistContent.split('\n').filter(line => line.endsWith('.ts'));
+    // console.log(chunkFileNames)
+    // for (const fileName of chunkFileNames) {
+    //     const filePath = path.join(videoFolderPath, fileName);
+    //     console.log(filePath)
+    //     const fileContent = await fs.promises.readFile(filePath);
+
+    //     // Set the appropriate headers for each TS chunk
+
+    //     // Send the TS chunk to the client
+    //     res.write(fileContent);
+    // }
+
+    // End the response
+    res.end();
+});
 
 
 
