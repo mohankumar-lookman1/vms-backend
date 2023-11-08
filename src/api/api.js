@@ -6,7 +6,7 @@ const startStreams = require('../main/streamer');
 const path = require('path');
 const fs = require('fs');
 const _ = require('lodash');
-const { recordVideo } = require('../main/recording');
+const { recordVideo, activeProcesses } = require('../main/recording');
 
 const getAvailablePorts = app.get('/available-ports', (req, res) => {
 
@@ -94,8 +94,8 @@ app.get('/video-recordings', async (req, res) => {
 });
 app.get('/start-recording', async (req, res) => {
     try {
-        recordVideo()
-        setInterval(recordVideo, 30000);
+        await recordVideo()
+        setInterval(recordVideo, 400000);
         res.send('recording started', 200)
     }
     catch (error) {

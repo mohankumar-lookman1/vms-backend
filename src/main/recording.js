@@ -24,8 +24,6 @@ async function recordVideo() {
     const mediaFolder = 'media';
     const recordingsFolder = path.join(mediaFolder, 'recordings');
     try {
-        // Stop active FFMPEG processes
-        // Ensure media and recordings folders exist
         await fs.mkdir(mediaFolder, { recursive: true });
         await fs.mkdir(recordingsFolder, { recursive: true });
         const rtspUrls = await getRTSPUrls();

@@ -4,7 +4,6 @@ const api = require('./src/api/api');
 const bodyParser = require('body-parser');
 const db = require('./database/connection');
 const path = require('path');
-const { recordVideo } = require('./src/main/recording');
 const app = express();
 const PORT = 3000;
 const auth = require('./src/api/auth');
@@ -21,15 +20,6 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use('/', api);
 app.use('/auth', auth);
-(async () => {
-    try {
-        // recordVideo();
-        // setInterval(recordVideo, 6000);
-    }
-    catch (error) {
-        console.log(error);
-    }
-})();
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
