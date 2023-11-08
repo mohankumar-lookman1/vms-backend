@@ -16,10 +16,14 @@ pipeline {
                 }
             }
         }
-        stage('Push and Run New Container') {
-            
-                    sh 'docker run -d --network host -p 3000:3000 --name secura-vms-container secura/secura-vms'
-            
+        stage('push') {
+            // withCredentials([string(credentialsId:'docker-hub-pwd',variable:'dockerHubPwd')]) {
+            //     sh "docker login -u mohankumar135 -p ${dockerHubPwd}"
+            // }
+            steps {
+                sh 'docker run -d  --network host -p 3000:3000 secura-vms'
+            }
         }
+        
     }
 }
