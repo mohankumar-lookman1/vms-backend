@@ -6,7 +6,7 @@ const startStreams = require('../main/streamer');
 const path = require('path');
 const fs = require('fs');
 const _ = require('lodash');
-const { recordVideo, activeProcesses } = require('../main/recording');
+const { recordVideo, ffmpegfunc, recordAll } = require('../main/recording');
 
 const getAvailablePorts = app.get('/available-ports', (req, res) => {
 
@@ -94,8 +94,8 @@ app.get('/video-recordings', async (req, res) => {
 });
 app.get('/start-recording', async (req, res) => {
     try {
-        await recordVideo()
-        setInterval(recordVideo, 400000);
+        await recordAll()
+        setInterval(recordAll, 40000);
         res.send('recording started', 200)
     }
     catch (error) {
@@ -109,14 +109,32 @@ app.get('/stop-recording', async (req, res) => {
         activeProcesses.forEach((process) => {
             console.log(process);
             process.kill('SIGKILL'); // Kill the process
-            res.send('recording stopped', 200)
+
         })
+        res.send('recording stopped', 200)
     }
     catch (error) {
         console.log(error);
         res.send('error', 500);
     }
 })
+app.post('/start-recording-one', (req, res) => {
+    if (!req.body) {
+        res.send('bad request', 400)
+        return
+    }
+    const obj = req.body;
+    console.log(req)
+    try {
+        ffmpegfunc(obj)
+        setInterval(ffmpegfunc, 40000);
+        res.send('recording started', 200)
+    }
+    catch (error) {
+        console.log(error);
+        res.send('error', 500);
+    }
+});
 
 
 module.exports = app;

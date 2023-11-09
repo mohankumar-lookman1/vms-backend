@@ -34,7 +34,7 @@
                   sshagent(credentials: ['devServer'], ignoreMissing: true) {
                     sh "docker login -u mohankumar135 -p @Yamaharx100"
                     sh 'docker pull mohankumar135/secura-vms:lts'
-                    sh 'docker run -d  --network host -p 3000:3000 --name secura-vms mohankumar135/secura-vms:lts'
+                    sh 'docker run -d  --network host -v /media:/media -p 3000:3000 --name secura-vms mohankumar135/secura-vms:lts'
                 }
                     
                 }
