@@ -6,7 +6,7 @@ const startStreams = require('../main/streamer');
 const path = require('path');
 const fs = require('fs');
 const _ = require('lodash');
-const { recordVideo, ffmpegfunc, recordAll } = require('../main/recording');
+const { ffmpegfunc, recordAll, activeProcesses } = require('../main/recording');
 
 const getAvailablePorts = app.get('/available-ports', (req, res) => {
 
@@ -65,8 +65,14 @@ app.post('/add-stream', async (req, res) => {
 
 
 
-app.get('/video-recordings', async (req, res) => {
+app.post('/video-recordings', async (req, res) => {
     const { cameraname, date, starttime, endtime } = req.query;
+    console.log(req.query)
+    if (!cameraname || !date || !starttime || !endtime) {
+        res.status(400).send('Bad request');
+        return;
+    }
+
     const videoFolderPath = path.join('media', 'recordings', cameraname, date, starttime); // Path to the video folder
 
     // Generate HLS playlist file (index.m3u8)
@@ -109,7 +115,6 @@ app.get('/stop-recording', async (req, res) => {
         activeProcesses.forEach((process) => {
             console.log(process);
             process.kill('SIGKILL'); // Kill the process
-
         })
         res.send('recording stopped', 200)
     }
@@ -119,12 +124,13 @@ app.get('/stop-recording', async (req, res) => {
     }
 })
 app.post('/start-recording-one', (req, res) => {
-    if (!req.body) {
+    if (!req.body || !req.body.url || !req.body.name || !req.body.ip) {
+        console.log(req.body)
         res.send('bad request', 400)
         return
     }
     const obj = req.body;
-    console.log(req)
+    console.log(obj)
     try {
         ffmpegfunc(obj)
         setInterval(ffmpegfunc, 40000);
@@ -136,5 +142,28 @@ app.post('/start-recording-one', (req, res) => {
     }
 });
 
+app.post('/stop-recording-one', (req, res) => {
+    if (!req.body || !req.body.url || !req.body.name || !req.body.ip) {
+        console.log(req.body)
+        res.send('bad request', 400)
+        return
+    }
+    const obj = req.body;
+    console.log(activeProcesses)
+    try {
+        activeProcesses.map((process) => {
+            console.log(process)
+            if (process.ip === obj.ip) {
+                console.log(process);
+                process.kill('SIGKILL'); // Kill the process
+            }
+        })
+        res.send('recording stopped', 200)
+    }
+    catch (error) {
+        console.log(error);
+        res.send('error', 500);
+    }
+})
 
 module.exports = app;

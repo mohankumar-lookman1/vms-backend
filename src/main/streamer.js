@@ -23,6 +23,8 @@ function createStreams(rtspUrls) {
             ffmpegOptions: {
                 '-r': 20,
                 '-s': '640x480',
+                '-vcodec': 'libx265',
+                '-acodec': 'aac',
                 '-preset': 'medium',
             },
         });

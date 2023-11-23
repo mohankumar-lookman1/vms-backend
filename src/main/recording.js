@@ -142,7 +142,7 @@ async function ffmpegfunc(obj) {
                         .output(outputFile);
 
                     // Add the ffmpeg process to the active processes list
-                    activeProcesses.push(ffmpegCommand);
+                    activeProcesses.push({ ffmpegCommand, ip, cameraName });
 
                     // Run the ffmpeg process
                     await new Promise((resolve) => {
@@ -162,4 +162,4 @@ async function ffmpegfunc(obj) {
         });
 }
 
-module.exports = { isCameraAvailable, recordAll, ffmpegfunc };
+module.exports = { isCameraAvailable, recordAll, ffmpegfunc, activeProcesses };
